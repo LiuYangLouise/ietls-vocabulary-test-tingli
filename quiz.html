@@ -561,532 +561,541 @@
     <!-- ===== 加载词汇数据 ===== -->
     <script src="vocabulary.js"></script>
 
-    <!-- ===== 验证数据是否加载成功 ===== -->
+    <!-- ===== 主逻辑（等待数据加载完成） ===== -->
     <script>
-        console.log('📊 ===== 词汇数据验证 =====');
-        if (typeof VOCABULARY_DATA !== 'undefined') {
-            const count = Object.keys(VOCABULARY_DATA).length;
-            console.log('✅ VOCABULARY_DATA 已加载，共 ' + count + ' 个单元');
-            console.log('📋 单元列表:', Object.keys(VOCABULARY_DATA).join(', '));
-        } else {
-            console.error('❌ VOCABULARY_DATA 未定义！请检查 vocabulary.js 是否加载');
-        }
-    </script>
+        // 等待 DOM 和 vocabulary.js 都加载完成
+        document.addEventListener('DOMContentLoaded', function() {
 
-    <!-- ===== 主逻辑 ===== -->
-    <script>
-        // ============================================================
-        // 获取 URL 参数
-        // ============================================================
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            const unitsParam = params.get('units') || '';
-            const accentParam = params.get('accent') || 'uk';
-            return { units: unitsParam.split(',').filter(Boolean), accent: accentParam };
-        }
+            // ============================================================
+            // 检查 VOCABULARY_DATA 是否已加载
+            // ============================================================
+            if (typeof VOCABULARY_DATA === 'undefined') {
+                document.querySelector('.quiz-card').innerHTML = `
+                    <div class="loading-text">
+                        <p style="font-size:20px; margin-bottom:12px;">⚠️ 词汇数据加载失败</p>
+                        <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 文件存在于同一目录下</p>
+                        <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
+                    </div>
+                `;
+                return;
+            }
 
-        const { units, accent } = getUrlParams();
+            console.log('✅ VOCABULARY_DATA 已加载，共 ' + Object.keys(VOCABULARY_DATA).length + ' 个单元');
 
-        // 如果没有传递任何单元，显示提示
-        if (units.length === 0) {
-            document.querySelector('.quiz-card').innerHTML = `
-                <div class="loading-text">
-                    <p style="font-size:20px; margin-bottom:12px;">⚠️ 未选择任何单元</p>
-                    <p style="font-size:14px; color:var(--color-text-placeholder);">请从首页选择单元后重新进入</p>
-                    <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
-                </div>
-            `;
-            throw new Error('No units selected');
-        }
+            // ============================================================
+            // 获取 URL 参数
+            // ============================================================
+            function getUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                const unitsParam = params.get('units') || '';
+                const accentParam = params.get('accent') || 'uk';
+                return { units: unitsParam.split(',').filter(Boolean), accent: accentParam };
+            }
 
-        // 检查 VOCABULARY_DATA 是否存在
-        if (typeof VOCABULARY_DATA === 'undefined') {
-            document.querySelector('.quiz-card').innerHTML = `
-                <div class="loading-text">
-                    <p style="font-size:20px; margin-bottom:12px;">⚠️ 词汇数据加载失败</p>
-                    <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 文件存在于同一目录下</p>
-                    <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
-                </div>
-            `;
-            throw new Error('VOCABULARY_DATA not defined');
-        }
+            const { units, accent } = getUrlParams();
 
-        // 加载词汇数据
-        function loadWordsFromUnits(unitIds) {
-            let allWords = [];
-            unitIds.forEach(id => {
-                const unit = window.VOCABULARY_DATA && window.VOCABULARY_DATA[id];
-                if (unit && unit.words) {
-                    allWords = allWords.concat(unit.words);
-                } else {
-                    console.warn('⚠️ 未找到单元数据:', id);
+            // 如果没有传递任何单元，显示提示
+            if (units.length === 0) {
+                document.querySelector('.quiz-card').innerHTML = `
+                    <div class="loading-text">
+                        <p style="font-size:20px; margin-bottom:12px;">⚠️ 未选择任何单元</p>
+                        <p style="font-size:14px; color:var(--color-text-placeholder);">请从首页选择单元后重新进入</p>
+                        <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // ============================================================
+            // 加载词汇数据
+            // ============================================================
+            function loadWordsFromUnits(unitIds) {
+                let allWords = [];
+                let missingUnits = [];
+
+                unitIds.forEach(id => {
+                    const unit = window.VOCABULARY_DATA && window.VOCABULARY_DATA[id];
+                    if (unit && unit.words) {
+                        allWords = allWords.concat(unit.words);
+                    } else {
+                        missingUnits.push(id);
+                        console.warn('⚠️ 未找到单元数据:', id);
+                    }
+                });
+
+                if (missingUnits.length > 0) {
+                    console.warn('❌ 缺失的单元:', missingUnits.join(', '));
+                }
+
+                return allWords;
+            }
+
+            const rawWords = loadWordsFromUnits(units);
+
+            console.log('📊 选中的单元:', units.join(', '));
+            console.log('📊 加载到的词汇总数:', rawWords.length);
+
+            if (rawWords.length === 0) {
+                document.querySelector('.quiz-card').innerHTML = `
+                    <div class="loading-text">
+                        <p style="font-size:20px; margin-bottom:12px;">⚠️ 所选单元暂无词汇数据</p>
+                        <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 中包含了这些单元的数据</p>
+                        <p style="font-size:13px; color:var(--color-text-placeholder); margin-top:8px;">缺失单元: ${units.join(', ')}</p>
+                        <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // 打乱并取25个
+            const shuffled = [...rawWords];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            const quizWords = shuffled.slice(0, 25);
+
+            console.log('📊 本次默写词汇数:', quizWords.length);
+
+            // ============================================================
+            // 状态
+            // ============================================================
+            let currentIndex = 0;
+            let results = [];
+            let timer = null;
+            let timeLeft = 15;
+            let isAnswered = false;
+            let replayCount = 0;
+            let toastTimer = null;
+
+            // DOM
+            const toast = document.getElementById('toast');
+            const quizCard = document.getElementById('quizCard');
+            const resultCard = document.getElementById('resultCard');
+            const progressBadge = document.getElementById('progressBadge');
+            const timerFill = document.getElementById('timerFill');
+            const timerText = document.getElementById('timerText');
+            const soundHint = document.getElementById('soundHint');
+            const hintText = document.getElementById('hintText');
+            const answerInput = document.getElementById('answerInput');
+            const replayBtn = document.getElementById('replayBtn');
+            const skipBtn = document.getElementById('skipBtn');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const enterHint = document.getElementById('enterHint');
+            const statsGrid = document.getElementById('statsGrid');
+            const errorList = document.getElementById('errorList');
+            const retryBtn = document.getElementById('retryBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const resultTitle = document.getElementById('resultTitle');
+
+            function showToast(msg, duration = 2000) {
+                if (toastTimer) {
+                    clearTimeout(toastTimer);
+                    toast.classList.remove('show');
+                }
+                toast.textContent = msg;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                    toastTimer = null;
+                }, duration);
+            }
+
+            // 完全禁用中文输入法
+            function disableChineseIME(e) {
+                const el = e.target;
+                el.blur();
+                setTimeout(() => {
+                    el.focus();
+                    const val = el.value;
+                    if (/[^a-zA-Z\s\-'\.]/.test(val)) {
+                        el.value = '';
+                        showToast('⚠️ 仅支持英文输入');
+                    }
+                }, 10);
+            }
+
+            answerInput.addEventListener('compositionstart', function(e) {
+                if (isAnswered) return;
+                disableChineseIME(e);
+            });
+
+            answerInput.addEventListener('compositionend', function(e) {
+                if (isAnswered) return;
+                const val = e.target.value;
+                if (/[^a-zA-Z\s\-'\.]/.test(val)) {
+                    e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
+                    if (e.target.value !== val) showToast('⚠️ 仅支持英文输入');
                 }
             });
-            return allWords;
-        }
 
-        const rawWords = loadWordsFromUnits(units);
-
-        console.log('📊 选中的单元:', units.join(', '));
-        console.log('📊 加载到的词汇总数:', rawWords.length);
-
-        if (rawWords.length === 0) {
-            document.querySelector('.quiz-card').innerHTML = `
-                <div class="loading-text">
-                    <p style="font-size:20px; margin-bottom:12px;">⚠️ 所选单元暂无词汇数据</p>
-                    <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 中包含了这些单元的数据</p>
-                    <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
-                </div>
-            `;
-            throw new Error('No vocabulary data for selected units');
-        }
-
-        // 打乱并取25个
-        const shuffled = [...rawWords];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        const quizWords = shuffled.slice(0, 25);
-
-        console.log('📊 本次默写词汇数:', quizWords.length);
-
-        // ============================================================
-        // 状态
-        // ============================================================
-        let currentIndex = 0;
-        let results = [];
-        let timer = null;
-        let timeLeft = 15;
-        let isAnswered = false;
-        let replayCount = 0;
-        const MAX_REPLAY = 3;
-        let toastTimer = null;
-
-        // DOM
-        const toast = document.getElementById('toast');
-        const quizCard = document.getElementById('quizCard');
-        const resultCard = document.getElementById('resultCard');
-        const progressBadge = document.getElementById('progressBadge');
-        const timerFill = document.getElementById('timerFill');
-        const timerText = document.getElementById('timerText');
-        const soundHint = document.getElementById('soundHint');
-        const hintText = document.getElementById('hintText');
-        const answerInput = document.getElementById('answerInput');
-        const replayBtn = document.getElementById('replayBtn');
-        const skipBtn = document.getElementById('skipBtn');
-        const confirmBtn = document.getElementById('confirmBtn');
-        const enterHint = document.getElementById('enterHint');
-        const statsGrid = document.getElementById('statsGrid');
-        const errorList = document.getElementById('errorList');
-        const retryBtn = document.getElementById('retryBtn');
-        const homeBtn = document.getElementById('homeBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const resultTitle = document.getElementById('resultTitle');
-
-        function showToast(msg, duration = 2000) {
-            if (toastTimer) {
-                clearTimeout(toastTimer);
-                toast.classList.remove('show');
-            }
-            toast.textContent = msg;
-            toast.classList.add('show');
-            toastTimer = setTimeout(() => {
-                toast.classList.remove('show');
-                toastTimer = null;
-            }, duration);
-        }
-
-        // 完全禁用中文输入法
-        function disableChineseIME(e) {
-            const el = e.target;
-            el.blur();
-            setTimeout(() => {
-                el.focus();
-                const val = el.value;
+            answerInput.addEventListener('input', function(e) {
+                if (isAnswered) return;
+                const val = e.target.value;
                 if (/[^a-zA-Z\s\-'\.]/.test(val)) {
-                    el.value = '';
+                    e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
+                    if (/[^a-zA-Z\s\-'\.]/.test(e.target.value)) e.target.value = '';
                     showToast('⚠️ 仅支持英文输入');
                 }
-            }, 10);
-        }
+            });
 
-        answerInput.addEventListener('compositionstart', function(e) {
-            if (isAnswered) return;
-            disableChineseIME(e);
-        });
-
-        answerInput.addEventListener('compositionend', function(e) {
-            if (isAnswered) return;
-            const val = e.target.value;
-            if (/[^a-zA-Z\s\-'\.]/.test(val)) {
-                e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
-                if (e.target.value !== val) showToast('⚠️ 仅支持英文输入');
-            }
-        });
-
-        answerInput.addEventListener('input', function(e) {
-            if (isAnswered) return;
-            const val = e.target.value;
-            if (/[^a-zA-Z\s\-'\.]/.test(val)) {
-                e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
-                if (/[^a-zA-Z\s\-'\.]/.test(e.target.value)) e.target.value = '';
-                showToast('⚠️ 仅支持英文输入');
-            }
-        });
-
-        answerInput.addEventListener('paste', function(e) {
-            const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            if (/[^a-zA-Z\s\-'\.]/.test(pasted)) {
-                e.preventDefault();
-                showToast('⚠️ 仅支持英文输入');
-            }
-        });
-
-        answerInput.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            showToast('⚠️ 右键粘贴已禁用，仅支持英文输入', 1500);
-        });
-
-        // 发音
-        function playSound() {
-            if (currentIndex >= quizWords.length) return;
-            const wordObj = quizWords[currentIndex];
-            const word = wordObj.word || wordObj;
-            hintText.textContent = '🔊 播放中 ...';
-            hintText.className = 'hint-text playing';
-            soundHint.style.borderColor = 'var(--color-main-green)';
-
-            if ('speechSynthesis' in window) {
-                speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(word);
-                utter.lang = accent === 'us' ? 'en-US' : 'en-GB';
-                utter.rate = 0.9;
-                const voices = speechSynthesis.getVoices();
-                const preferred = voices.find(v => v.lang.startsWith(accent === 'us' ? 'en-US' : 'en-GB'));
-                if (preferred) utter.voice = preferred;
-                speechSynthesis.speak(utter);
-                utter.onend = function() {
-                    hintText.textContent = '点击「再放一次」再听一次';
-                    hintText.className = 'hint-text';
-                    soundHint.style.borderColor = '#d6d0c0';
-                };
-            } else {
-                setTimeout(() => {
-                    hintText.textContent = '点击「再放一次」再听一次';
-                    hintText.className = 'hint-text';
-                    soundHint.style.borderColor = '#d6d0c0';
-                }, 1200);
-            }
-        }
-
-        // 核心逻辑
-        function initQuiz() {
-            currentIndex = 0;
-            results = [];
-            quizCard.style.display = 'block';
-            resultCard.classList.remove('visible');
-            resultCard.style.display = 'none';
-            answerInput.disabled = false;
-            answerInput.value = '';
-            answerInput.focus();
-            isAnswered = false;
-            replayCount = 0;
-            clearTimer();
-            renderQuestion();
-        }
-
-        function renderQuestion() {
-            if (currentIndex >= quizWords.length) {
-                showResult();
-                return;
-            }
-
-            const total = quizWords.length;
-            progressBadge.textContent = `${currentIndex + 1} / ${total}`;
-            answerInput.value = '';
-            answerInput.disabled = false;
-            setTimeout(() => answerInput.focus(), 50);
-            isAnswered = false;
-            replayCount = 0;
-
-            hintText.textContent = '点击「再放一次」听发音';
-            hintText.className = 'hint-text';
-            soundHint.style.borderColor = '#d6d0c0';
-
-            timeLeft = 15;
-            timerFill.style.width = '100%';
-            timerText.textContent = '15s';
-            clearTimer();
-            startTimer();
-
-            setTimeout(() => playSound(), 300);
-
-            enterHint.textContent = '按 Enter 或点击「确认」提交';
-            confirmBtn.disabled = false;
-        }
-
-        function startTimer() {
-            clearTimer();
-            timer = setInterval(() => {
-                timeLeft -= 0.2;
-                if (timeLeft <= 0) {
-                    timeLeft = 0;
-                    timerFill.style.width = '0%';
-                    timerText.textContent = '0s';
-                    clearTimer();
-                    if (!isAnswered && currentIndex < quizWords.length) handleTimeout();
-                    return;
+            answerInput.addEventListener('paste', function(e) {
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                if (/[^a-zA-Z\s\-'\.]/.test(pasted)) {
+                    e.preventDefault();
+                    showToast('⚠️ 仅支持英文输入');
                 }
-                const pct = (timeLeft / 15) * 100;
-                timerFill.style.width = pct + '%';
-                timerText.textContent = Math.ceil(timeLeft) + 's';
-            }, 200);
-        }
+            });
 
-        function clearTimer() {
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            }
-        }
+            answerInput.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showToast('⚠️ 右键粘贴已禁用，仅支持英文输入', 1500);
+            });
 
-        function handleTimeout() {
-            if (isAnswered) return;
-            const wordObj = quizWords[currentIndex];
-            const word = wordObj.word || wordObj;
-            results.push({ word, userAnswer: '(超时未填)', status: 'skipped' });
-            isAnswered = true;
-            answerInput.disabled = true;
-            confirmBtn.disabled = true;
-            enterHint.textContent = '⏱ 超时，自动跳过';
-            setTimeout(() => {
-                currentIndex++;
-                renderQuestion();
-            }, 600);
-        }
-
-        function submitAnswer() {
-            if (isAnswered) return;
-            const input = answerInput.value.trim();
-            const wordObj = quizWords[currentIndex];
-            const word = wordObj.word || wordObj;
-
-            if (input === '') {
-                results.push({ word, userAnswer: '(未填)', status: 'skipped' });
-                isAnswered = true;
-                answerInput.disabled = true;
-                confirmBtn.disabled = true;
-                enterHint.textContent = '⏭ 未填，已跳过';
-                clearTimer();
-                setTimeout(() => {
-                    currentIndex++;
-                    renderQuestion();
-                }, 500);
-                return;
-            }
-
-            const correct = word.toLowerCase().trim();
-            const user = input.toLowerCase().trim();
-            const status = user === correct ? 'correct' : 'wrong';
-            results.push({ word, userAnswer: input, status });
-            isAnswered = true;
-            answerInput.disabled = true;
-            confirmBtn.disabled = true;
-            clearTimer();
-
-            if (status === 'correct') enterHint.textContent = '✅ 正确！';
-            else enterHint.textContent = `❌ 正确: ${correct}`;
-
-            setTimeout(() => {
-                currentIndex++;
-                renderQuestion();
-            }, 700);
-        }
-
-        function handleSkip() {
-            if (isAnswered) return;
-            const wordObj = quizWords[currentIndex];
-            const word = wordObj.word || wordObj;
-            results.push({ word, userAnswer: '(跳过)', status: 'skipped' });
-            isAnswered = true;
-            answerInput.disabled = true;
-            confirmBtn.disabled = true;
-            clearTimer();
-            enterHint.textContent = '⏭ 已跳过';
-            setTimeout(() => {
-                currentIndex++;
-                renderQuestion();
-            }, 400);
-        }
-
-        function handleReplay() {
-            if (isAnswered) return;
-            replayCount++;
-            if (replayCount >= 4) {
+            // 发音
+            function playSound() {
+                if (currentIndex >= quizWords.length) return;
                 const wordObj = quizWords[currentIndex];
                 const word = wordObj.word || wordObj;
-                results.push({ word, userAnswer: '(连续重播超限)', status: 'skipped' });
+                hintText.textContent = '🔊 播放中 ...';
+                hintText.className = 'hint-text playing';
+                soundHint.style.borderColor = 'var(--color-main-green)';
+
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(word);
+                    utter.lang = accent === 'us' ? 'en-US' : 'en-GB';
+                    utter.rate = 0.9;
+                    const voices = speechSynthesis.getVoices();
+                    const preferred = voices.find(v => v.lang.startsWith(accent === 'us' ? 'en-US' : 'en-GB'));
+                    if (preferred) utter.voice = preferred;
+                    speechSynthesis.speak(utter);
+                    utter.onend = function() {
+                        hintText.textContent = '点击「再放一次」再听一次';
+                        hintText.className = 'hint-text';
+                        soundHint.style.borderColor = '#d6d0c0';
+                    };
+                } else {
+                    setTimeout(() => {
+                        hintText.textContent = '点击「再放一次」再听一次';
+                        hintText.className = 'hint-text';
+                        soundHint.style.borderColor = '#d6d0c0';
+                    }, 1200);
+                }
+            }
+
+            // 核心逻辑
+            function initQuiz() {
+                currentIndex = 0;
+                results = [];
+                quizCard.style.display = 'block';
+                resultCard.classList.remove('visible');
+                resultCard.style.display = 'none';
+                answerInput.disabled = false;
+                answerInput.value = '';
+                answerInput.focus();
+                isAnswered = false;
+                replayCount = 0;
+                clearTimer();
+                renderQuestion();
+            }
+
+            function renderQuestion() {
+                if (currentIndex >= quizWords.length) {
+                    showResult();
+                    return;
+                }
+
+                const total = quizWords.length;
+                progressBadge.textContent = currentIndex + 1 + ' / ' + total;
+                answerInput.value = '';
+                answerInput.disabled = false;
+                setTimeout(() => answerInput.focus(), 50);
+                isAnswered = false;
+                replayCount = 0;
+
+                hintText.textContent = '点击「再放一次」听发音';
+                hintText.className = 'hint-text';
+                soundHint.style.borderColor = '#d6d0c0';
+
+                timeLeft = 15;
+                timerFill.style.width = '100%';
+                timerText.textContent = '15s';
+                clearTimer();
+                startTimer();
+
+                setTimeout(() => playSound(), 300);
+
+                enterHint.textContent = '按 Enter 或点击「确认」提交';
+                confirmBtn.disabled = false;
+            }
+
+            function startTimer() {
+                clearTimer();
+                timer = setInterval(() => {
+                    timeLeft -= 0.2;
+                    if (timeLeft <= 0) {
+                        timeLeft = 0;
+                        timerFill.style.width = '0%';
+                        timerText.textContent = '0s';
+                        clearTimer();
+                        if (!isAnswered && currentIndex < quizWords.length) handleTimeout();
+                        return;
+                    }
+                    const pct = (timeLeft / 15) * 100;
+                    timerFill.style.width = pct + '%';
+                    timerText.textContent = Math.ceil(timeLeft) + 's';
+                }, 200);
+            }
+
+            function clearTimer() {
+                if (timer) {
+                    clearInterval(timer);
+                    timer = null;
+                }
+            }
+
+            function handleTimeout() {
+                if (isAnswered) return;
+                const wordObj = quizWords[currentIndex];
+                const word = wordObj.word || wordObj;
+                results.push({ word: word, userAnswer: '(超时未填)', status: 'skipped' });
+                isAnswered = true;
+                answerInput.disabled = true;
+                confirmBtn.disabled = true;
+                enterHint.textContent = '⏱ 超时，自动跳过';
+                setTimeout(() => {
+                    currentIndex++;
+                    renderQuestion();
+                }, 600);
+            }
+
+            function submitAnswer() {
+                if (isAnswered) return;
+                const input = answerInput.value.trim();
+                const wordObj = quizWords[currentIndex];
+                const word = wordObj.word || wordObj;
+
+                if (input === '') {
+                    results.push({ word: word, userAnswer: '(未填)', status: 'skipped' });
+                    isAnswered = true;
+                    answerInput.disabled = true;
+                    confirmBtn.disabled = true;
+                    enterHint.textContent = '⏭ 未填，已跳过';
+                    clearTimer();
+                    setTimeout(() => {
+                        currentIndex++;
+                        renderQuestion();
+                    }, 500);
+                    return;
+                }
+
+                const correct = word.toLowerCase().trim();
+                const user = input.toLowerCase().trim();
+                const status = user === correct ? 'correct' : 'wrong';
+                results.push({ word: word, userAnswer: input, status: status });
                 isAnswered = true;
                 answerInput.disabled = true;
                 confirmBtn.disabled = true;
                 clearTimer();
-                enterHint.textContent = '🔇 重播超限，自动跳过';
+
+                if (status === 'correct') enterHint.textContent = '✅ 正确！';
+                else enterHint.textContent = '❌ 正确: ' + correct;
+
                 setTimeout(() => {
                     currentIndex++;
                     renderQuestion();
-                }, 500);
-                return;
+                }, 700);
             }
-            playSound();
-        }
 
-        // 结果页
-        function showResult() {
-            clearTimer();
-            if ('speechSynthesis' in window) speechSynthesis.cancel();
-
-            quizCard.style.display = 'none';
-            resultCard.style.display = 'block';
-            requestAnimationFrame(() => resultCard.classList.add('visible'));
-
-            let correct = 0,
-                wrong = 0,
-                skipped = 0;
-            results.forEach(r => {
-                if (r.status === 'correct') correct++;
-                else if (r.status === 'wrong') wrong++;
-                else skipped++;
-            });
-            const total = results.length;
-            const rate = total > 0 ? (correct / total * 100) : 0;
-
-            let titleText = '',
-                titleClass = '';
-            if (rate >= 80) {
-                titleText = '💡 完美通关！继续加油！';
-                titleClass = 'green';
-            } else if (rate >= 70) {
-                titleText = '💡 哎呀，差一丢丢过关哦~';
-                titleClass = 'orange';
-            } else {
-                titleText = '💡 错误有点小多哦，再复习一下~';
-                titleClass = 'red';
+            function handleSkip() {
+                if (isAnswered) return;
+                const wordObj = quizWords[currentIndex];
+                const word = wordObj.word || wordObj;
+                results.push({ word: word, userAnswer: '(跳过)', status: 'skipped' });
+                isAnswered = true;
+                answerInput.disabled = true;
+                confirmBtn.disabled = true;
+                clearTimer();
+                enterHint.textContent = '⏭ 已跳过';
+                setTimeout(() => {
+                    currentIndex++;
+                    renderQuestion();
+                }, 400);
             }
-            resultTitle.textContent = titleText;
-            resultTitle.className = 'result-title ' + titleClass;
 
-            statsGrid.innerHTML = `
-                <div class="stat"><span class="num">${correct}</span><span class="label">正确</span></div>
-                <div class="stat"><span class="num red">${wrong}</span><span class="label">错误</span></div>
-                <div class="stat"><span class="num gray">${skipped}</span><span class="label">未填</span></div>
-                <div class="stat"><span class="num" style="font-size:22px;">${rate.toFixed(2)}%</span><span class="label">正确率</span></div>
-            `;
+            function handleReplay() {
+                if (isAnswered) return;
+                replayCount++;
+                if (replayCount >= 4) {
+                    const wordObj = quizWords[currentIndex];
+                    const word = wordObj.word || wordObj;
+                    results.push({ word: word, userAnswer: '(连续重播超限)', status: 'skipped' });
+                    isAnswered = true;
+                    answerInput.disabled = true;
+                    confirmBtn.disabled = true;
+                    clearTimer();
+                    enterHint.textContent = '🔇 重播超限，自动跳过';
+                    setTimeout(() => {
+                        currentIndex++;
+                        renderQuestion();
+                    }, 500);
+                    return;
+                }
+                playSound();
+            }
 
-            const errors = results.filter(r => r.status === 'wrong' || r.status === 'skipped');
-            if (errors.length === 0) {
-                errorList.innerHTML = '<div style="padding:6px 0; color:var(--color-main-green);">🎉 全部正确，太棒了！</div>';
-            } else {
-                let html = '';
-                errors.forEach(r => {
-                    const icon = '💡';
-                    const cls = r.status === 'wrong' ? 'wrong' : 'empty';
-                    const displayAnswer = r.userAnswer || '(未填)';
-                    html +=
-                        `<div class="row"><span class="${cls}"><span class="bulb">${icon}</span> ${r.word}</span> → <span>${displayAnswer}</span></div>`;
+            // 结果页
+            function showResult() {
+                clearTimer();
+                if ('speechSynthesis' in window) speechSynthesis.cancel();
+
+                quizCard.style.display = 'none';
+                resultCard.style.display = 'block';
+                requestAnimationFrame(() => resultCard.classList.add('visible'));
+
+                let correct = 0,
+                    wrong = 0,
+                    skipped = 0;
+                results.forEach(function(r) {
+                    if (r.status === 'correct') correct++;
+                    else if (r.status === 'wrong') wrong++;
+                    else skipped++;
                 });
-                errorList.innerHTML = html;
-            }
-        }
+                const total = results.length;
+                const rate = total > 0 ? (correct / total * 100) : 0;
 
-        // 导出错词
-        function exportErrors() {
-            const errors = results.filter(r => r.status === 'wrong' || r.status === 'skipped');
-            if (errors.length === 0) {
-                showToast('🎉 没有错词需要导出！', 2000);
-                return;
+                var titleText = '',
+                    titleClass = '';
+                if (rate >= 80) {
+                    titleText = '💡 完美通关！继续加油！';
+                    titleClass = 'green';
+                } else if (rate >= 70) {
+                    titleText = '💡 哎呀，差一丢丢过关哦~';
+                    titleClass = 'orange';
+                } else {
+                    titleText = '💡 错误有点小多哦，再复习一下~';
+                    titleClass = 'red';
+                }
+                resultTitle.textContent = titleText;
+                resultTitle.className = 'result-title ' + titleClass;
+
+                statsGrid.innerHTML =
+                    '<div class="stat"><span class="num">' + correct + '</span><span class="label">正确</span></div>' +
+                    '<div class="stat"><span class="num red">' + wrong + '</span><span class="label">错误</span></div>' +
+                    '<div class="stat"><span class="num gray">' + skipped + '</span><span class="label">未填</span></div>' +
+                    '<div class="stat"><span class="num" style="font-size:22px;">' + rate.toFixed(2) + '%</span><span class="label">正确率</span></div>';
+
+                var errors = results.filter(function(r) { return r.status === 'wrong' || r.status === 'skipped'; });
+                if (errors.length === 0) {
+                    errorList.innerHTML = '<div style="padding:6px 0; color:var(--color-main-green);">🎉 全部正确，太棒了！</div>';
+                } else {
+                    var html = '';
+                    errors.forEach(function(r) {
+                        var icon = '💡';
+                        var cls = r.status === 'wrong' ? 'wrong' : 'empty';
+                        var displayAnswer = r.userAnswer || '(未填)';
+                        html += '<div class="row"><span class="' + cls + '"><span class="bulb">' + icon + '</span> ' + r.word + '</span> → <span>' + displayAnswer + '</span></div>';
+                    });
+                    errorList.innerHTML = html;
+                }
             }
-            let lines = [];
-            lines.push('📘 Reborn新生留学 · 错词导出');
-            lines.push('导出时间: ' + new Date().toLocaleString());
-            lines.push('─'.repeat(40));
-            errors.forEach((r, idx) => {
-                const statusText = r.status === 'wrong' ? '❌ 错误' : '⬜ 未填/跳过';
-                lines.push(`${idx+1}. ${r.word}  →  你的答案: ${r.userAnswer || '(未填)'}  [${statusText}]`);
+
+            // 导出错词
+            function exportErrors() {
+                var errors = results.filter(function(r) { return r.status === 'wrong' || r.status === 'skipped'; });
+                if (errors.length === 0) {
+                    showToast('🎉 没有错词需要导出！', 2000);
+                    return;
+                }
+                var lines = [];
+                lines.push('📘 Reborn新生留学 · 错词导出');
+                lines.push('导出时间: ' + new Date().toLocaleString());
+                lines.push('─'.repeat(40));
+                errors.forEach(function(r, idx) {
+                    var statusText = r.status === 'wrong' ? '❌ 错误' : '⬜ 未填/跳过';
+                    lines.push((idx + 1) + '. ' + r.word + '  →  你的答案: ' + (r.userAnswer || '(未填)') + '  [' + statusText + ']');
+                });
+                lines.push('─'.repeat(40));
+                lines.push('📝 共 ' + errors.length + ' 个需要复习的词汇');
+
+                var content = lines.join('\n');
+                var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = '错词列表_' + new Date().toISOString().slice(0, 10) + '.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('✅ 错词已导出！', 2000);
+            }
+
+            // 再来一次
+            function retryQuiz() {
+                var shuffled2 = [...rawWords];
+                for (var i = shuffled2.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = shuffled2[i];
+                    shuffled2[i] = shuffled2[j];
+                    shuffled2[j] = temp;
+                }
+                quizWords.length = 0;
+                var newWords = shuffled2.slice(0, 25);
+                for (var k = 0; k < newWords.length; k++) {
+                    quizWords.push(newWords[k]);
+                }
+
+                currentIndex = 0;
+                results = [];
+                resultCard.classList.remove('visible');
+                resultCard.style.display = 'none';
+                quizCard.style.display = 'block';
+                answerInput.disabled = false;
+                answerInput.value = '';
+                isAnswered = false;
+                replayCount = 0;
+                clearTimer();
+                renderQuestion();
+                showToast('🔄 重新开始！', 1000);
+            }
+
+            // 事件绑定
+            answerInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!isAnswered && currentIndex < quizWords.length) submitAnswer();
+                }
             });
-            lines.push('─'.repeat(40));
-            lines.push('📝 共 ' + errors.length + ' 个需要复习的词汇');
-
-            const content = lines.join('\n');
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `错词列表_${new Date().toISOString().slice(0,10)}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('✅ 错词已导出！', 2000);
-        }
-
-        // 再来一次
-        function retryQuiz() {
-            const shuffled2 = [...rawWords];
-            for (let i = shuffled2.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled2[i], shuffled2[j]] = [shuffled2[j], shuffled2[i]];
-            }
-            quizWords.length = 0;
-            const newWords = shuffled2.slice(0, 25);
-            quizWords.push(...newWords);
-
-            currentIndex = 0;
-            results = [];
-            resultCard.classList.remove('visible');
-            resultCard.style.display = 'none';
-            quizCard.style.display = 'block';
-            answerInput.disabled = false;
-            answerInput.value = '';
-            isAnswered = false;
-            replayCount = 0;
-            clearTimer();
-            renderQuestion();
-            showToast('🔄 重新开始！', 1000);
-        }
-
-        // 事件绑定
-        answerInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
+            confirmBtn.addEventListener('click', function() {
                 if (!isAnswered && currentIndex < quizWords.length) submitAnswer();
-            }
-        });
-        confirmBtn.addEventListener('click', () => {
-            if (!isAnswered && currentIndex < quizWords.length) submitAnswer();
-        });
-        replayBtn.addEventListener('click', handleReplay);
-        skipBtn.addEventListener('click', handleSkip);
-        soundHint.addEventListener('click', handleReplay);
-        retryBtn.addEventListener('click', retryQuiz);
-        homeBtn.addEventListener('click', () => {
-            if (confirm('回到首页，当前进度将丢失。')) window.location.href = 'index.html';
-        });
-        exportBtn.addEventListener('click', exportErrors);
+            });
+            replayBtn.addEventListener('click', handleReplay);
+            skipBtn.addEventListener('click', handleSkip);
+            soundHint.addEventListener('click', handleReplay);
+            retryBtn.addEventListener('click', retryQuiz);
+            homeBtn.addEventListener('click', function() {
+                if (confirm('回到首页，当前进度将丢失。')) window.location.href = 'index.html';
+            });
+            exportBtn.addEventListener('click', exportErrors);
 
-        // 初始化语音
-        if ('speechSynthesis' in window) {
-            speechSynthesis.getVoices();
-            speechSynthesis.onvoiceschanged = function() {
+            // 初始化语音
+            if ('speechSynthesis' in window) {
                 speechSynthesis.getVoices();
-            };
-        }
+                speechSynthesis.onvoiceschanged = function() {
+                    speechSynthesis.getVoices();
+                };
+            }
 
-        // 启动
-        initQuiz();
-        console.log('✅ Reborn新生留学 · 默写页面已加载');
-        console.log(`📋 共 ${quizWords.length} 个词汇`);
-        console.log(`🔊 发音: ${accent === 'us' ? '美音' : '英音'}`);
+            // 启动
+            initQuiz();
+            console.log('✅ Reborn新生留学 · 默写页面已加载');
+            console.log('📋 共 ' + quizWords.length + ' 个词汇');
+            console.log('🔊 发音: ' + (accent === 'us' ? '美音' : '英音'));
+
+        }); // 结束 DOMContentLoaded
     </script>
 
 </body>
