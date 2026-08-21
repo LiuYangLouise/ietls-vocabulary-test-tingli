@@ -561,14 +561,12 @@
     <!-- ===== 加载词汇数据 ===== -->
     <script src="vocabulary.js"></script>
 
-    <!-- ===== 主逻辑（等待数据加载完成） ===== -->
+    <!-- ===== 主逻辑 ===== -->
     <script>
-        // 等待 DOM 和 vocabulary.js 都加载完成
-        document.addEventListener('DOMContentLoaded', function() {
+        // 等待页面和 vocabulary.js 都加载完成
+        window.addEventListener('load', function() {
 
-            // ============================================================
             // 检查 VOCABULARY_DATA 是否已加载
-            // ============================================================
             if (typeof VOCABULARY_DATA === 'undefined') {
                 document.querySelector('.quiz-card').innerHTML = `
                     <div class="loading-text">
@@ -586,13 +584,15 @@
             // 获取 URL 参数
             // ============================================================
             function getUrlParams() {
-                const params = new URLSearchParams(window.location.search);
-                const unitsParam = params.get('units') || '';
-                const accentParam = params.get('accent') || 'uk';
+                var params = new URLSearchParams(window.location.search);
+                var unitsParam = params.get('units') || '';
+                var accentParam = params.get('accent') || 'uk';
                 return { units: unitsParam.split(',').filter(Boolean), accent: accentParam };
             }
 
-            const { units, accent } = getUrlParams();
+            var urlParams = getUrlParams();
+            var units = urlParams.units;
+            var accent = urlParams.accent;
 
             // 如果没有传递任何单元，显示提示
             if (units.length === 0) {
@@ -610,11 +610,11 @@
             // 加载词汇数据
             // ============================================================
             function loadWordsFromUnits(unitIds) {
-                let allWords = [];
-                let missingUnits = [];
+                var allWords = [];
+                var missingUnits = [];
 
-                unitIds.forEach(id => {
-                    const unit = window.VOCABULARY_DATA && window.VOCABULARY_DATA[id];
+                unitIds.forEach(function(id) {
+                    var unit = window.VOCABULARY_DATA && window.VOCABULARY_DATA[id];
                     if (unit && unit.words) {
                         allWords = allWords.concat(unit.words);
                     } else {
@@ -630,7 +630,7 @@
                 return allWords;
             }
 
-            const rawWords = loadWordsFromUnits(units);
+            var rawWords = loadWordsFromUnits(units);
 
             console.log('📊 选中的单元:', units.join(', '));
             console.log('📊 加载到的词汇总数:', rawWords.length);
@@ -648,55 +648,58 @@
             }
 
             // 打乱并取25个
-            const shuffled = [...rawWords];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            var shuffled = rawWords.slice();
+            for (var i = shuffled.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = shuffled[i];
+                shuffled[i] = shuffled[j];
+                shuffled[j] = temp;
             }
-            const quizWords = shuffled.slice(0, 25);
+            var quizWords = shuffled.slice(0, 25);
 
             console.log('📊 本次默写词汇数:', quizWords.length);
 
             // ============================================================
             // 状态
             // ============================================================
-            let currentIndex = 0;
-            let results = [];
-            let timer = null;
-            let timeLeft = 15;
-            let isAnswered = false;
-            let replayCount = 0;
-            let toastTimer = null;
+            var currentIndex = 0;
+            var results = [];
+            var timer = null;
+            var timeLeft = 15;
+            var isAnswered = false;
+            var replayCount = 0;
+            var toastTimer = null;
 
             // DOM
-            const toast = document.getElementById('toast');
-            const quizCard = document.getElementById('quizCard');
-            const resultCard = document.getElementById('resultCard');
-            const progressBadge = document.getElementById('progressBadge');
-            const timerFill = document.getElementById('timerFill');
-            const timerText = document.getElementById('timerText');
-            const soundHint = document.getElementById('soundHint');
-            const hintText = document.getElementById('hintText');
-            const answerInput = document.getElementById('answerInput');
-            const replayBtn = document.getElementById('replayBtn');
-            const skipBtn = document.getElementById('skipBtn');
-            const confirmBtn = document.getElementById('confirmBtn');
-            const enterHint = document.getElementById('enterHint');
-            const statsGrid = document.getElementById('statsGrid');
-            const errorList = document.getElementById('errorList');
-            const retryBtn = document.getElementById('retryBtn');
-            const homeBtn = document.getElementById('homeBtn');
-            const exportBtn = document.getElementById('exportBtn');
-            const resultTitle = document.getElementById('resultTitle');
+            var toast = document.getElementById('toast');
+            var quizCard = document.getElementById('quizCard');
+            var resultCard = document.getElementById('resultCard');
+            var progressBadge = document.getElementById('progressBadge');
+            var timerFill = document.getElementById('timerFill');
+            var timerText = document.getElementById('timerText');
+            var soundHint = document.getElementById('soundHint');
+            var hintText = document.getElementById('hintText');
+            var answerInput = document.getElementById('answerInput');
+            var replayBtn = document.getElementById('replayBtn');
+            var skipBtn = document.getElementById('skipBtn');
+            var confirmBtn = document.getElementById('confirmBtn');
+            var enterHint = document.getElementById('enterHint');
+            var statsGrid = document.getElementById('statsGrid');
+            var errorList = document.getElementById('errorList');
+            var retryBtn = document.getElementById('retryBtn');
+            var homeBtn = document.getElementById('homeBtn');
+            var exportBtn = document.getElementById('exportBtn');
+            var resultTitle = document.getElementById('resultTitle');
 
-            function showToast(msg, duration = 2000) {
+            function showToast(msg, duration) {
+                duration = duration || 2000;
                 if (toastTimer) {
                     clearTimeout(toastTimer);
                     toast.classList.remove('show');
                 }
                 toast.textContent = msg;
                 toast.classList.add('show');
-                toastTimer = setTimeout(() => {
+                toastTimer = setTimeout(function() {
                     toast.classList.remove('show');
                     toastTimer = null;
                 }, duration);
@@ -704,11 +707,11 @@
 
             // 完全禁用中文输入法
             function disableChineseIME(e) {
-                const el = e.target;
+                var el = e.target;
                 el.blur();
-                setTimeout(() => {
+                setTimeout(function() {
                     el.focus();
-                    const val = el.value;
+                    var val = el.value;
                     if (/[^a-zA-Z\s\-'\.]/.test(val)) {
                         el.value = '';
                         showToast('⚠️ 仅支持英文输入');
@@ -723,7 +726,7 @@
 
             answerInput.addEventListener('compositionend', function(e) {
                 if (isAnswered) return;
-                const val = e.target.value;
+                var val = e.target.value;
                 if (/[^a-zA-Z\s\-'\.]/.test(val)) {
                     e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
                     if (e.target.value !== val) showToast('⚠️ 仅支持英文输入');
@@ -732,7 +735,7 @@
 
             answerInput.addEventListener('input', function(e) {
                 if (isAnswered) return;
-                const val = e.target.value;
+                var val = e.target.value;
                 if (/[^a-zA-Z\s\-'\.]/.test(val)) {
                     e.target.value = val.replace(/[^a-zA-Z\s\-'\.]/g, '');
                     if (/[^a-zA-Z\s\-'\.]/.test(e.target.value)) e.target.value = '';
@@ -741,7 +744,7 @@
             });
 
             answerInput.addEventListener('paste', function(e) {
-                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                var pasted = (e.clipboardData || window.clipboardData).getData('text');
                 if (/[^a-zA-Z\s\-'\.]/.test(pasted)) {
                     e.preventDefault();
                     showToast('⚠️ 仅支持英文输入');
@@ -756,19 +759,19 @@
             // 发音
             function playSound() {
                 if (currentIndex >= quizWords.length) return;
-                const wordObj = quizWords[currentIndex];
-                const word = wordObj.word || wordObj;
+                var wordObj = quizWords[currentIndex];
+                var word = wordObj.word || wordObj;
                 hintText.textContent = '🔊 播放中 ...';
                 hintText.className = 'hint-text playing';
                 soundHint.style.borderColor = 'var(--color-main-green)';
 
                 if ('speechSynthesis' in window) {
                     speechSynthesis.cancel();
-                    const utter = new SpeechSynthesisUtterance(word);
+                    var utter = new SpeechSynthesisUtterance(word);
                     utter.lang = accent === 'us' ? 'en-US' : 'en-GB';
                     utter.rate = 0.9;
-                    const voices = speechSynthesis.getVoices();
-                    const preferred = voices.find(v => v.lang.startsWith(accent === 'us' ? 'en-US' : 'en-GB'));
+                    var voices = speechSynthesis.getVoices();
+                    var preferred = voices.find(function(v) { return v.lang.startsWith(accent === 'us' ? 'en-US' : 'en-GB'); });
                     if (preferred) utter.voice = preferred;
                     speechSynthesis.speak(utter);
                     utter.onend = function() {
@@ -777,7 +780,7 @@
                         soundHint.style.borderColor = '#d6d0c0';
                     };
                 } else {
-                    setTimeout(() => {
+                    setTimeout(function() {
                         hintText.textContent = '点击「再放一次」再听一次';
                         hintText.className = 'hint-text';
                         soundHint.style.borderColor = '#d6d0c0';
@@ -807,11 +810,11 @@
                     return;
                 }
 
-                const total = quizWords.length;
-                progressBadge.textContent = currentIndex + 1 + ' / ' + total;
+                var total = quizWords.length;
+                progressBadge.textContent = (currentIndex + 1) + ' / ' + total;
                 answerInput.value = '';
                 answerInput.disabled = false;
-                setTimeout(() => answerInput.focus(), 50);
+                setTimeout(function() { answerInput.focus(); }, 50);
                 isAnswered = false;
                 replayCount = 0;
 
@@ -825,7 +828,7 @@
                 clearTimer();
                 startTimer();
 
-                setTimeout(() => playSound(), 300);
+                setTimeout(function() { playSound(); }, 300);
 
                 enterHint.textContent = '按 Enter 或点击「确认」提交';
                 confirmBtn.disabled = false;
@@ -833,7 +836,7 @@
 
             function startTimer() {
                 clearTimer();
-                timer = setInterval(() => {
+                timer = setInterval(function() {
                     timeLeft -= 0.2;
                     if (timeLeft <= 0) {
                         timeLeft = 0;
@@ -843,7 +846,7 @@
                         if (!isAnswered && currentIndex < quizWords.length) handleTimeout();
                         return;
                     }
-                    const pct = (timeLeft / 15) * 100;
+                    var pct = (timeLeft / 15) * 100;
                     timerFill.style.width = pct + '%';
                     timerText.textContent = Math.ceil(timeLeft) + 's';
                 }, 200);
@@ -858,14 +861,14 @@
 
             function handleTimeout() {
                 if (isAnswered) return;
-                const wordObj = quizWords[currentIndex];
-                const word = wordObj.word || wordObj;
+                var wordObj = quizWords[currentIndex];
+                var word = wordObj.word || wordObj;
                 results.push({ word: word, userAnswer: '(超时未填)', status: 'skipped' });
                 isAnswered = true;
                 answerInput.disabled = true;
                 confirmBtn.disabled = true;
                 enterHint.textContent = '⏱ 超时，自动跳过';
-                setTimeout(() => {
+                setTimeout(function() {
                     currentIndex++;
                     renderQuestion();
                 }, 600);
@@ -873,9 +876,9 @@
 
             function submitAnswer() {
                 if (isAnswered) return;
-                const input = answerInput.value.trim();
-                const wordObj = quizWords[currentIndex];
-                const word = wordObj.word || wordObj;
+                var input = answerInput.value.trim();
+                var wordObj = quizWords[currentIndex];
+                var word = wordObj.word || wordObj;
 
                 if (input === '') {
                     results.push({ word: word, userAnswer: '(未填)', status: 'skipped' });
@@ -884,16 +887,16 @@
                     confirmBtn.disabled = true;
                     enterHint.textContent = '⏭ 未填，已跳过';
                     clearTimer();
-                    setTimeout(() => {
+                    setTimeout(function() {
                         currentIndex++;
                         renderQuestion();
                     }, 500);
                     return;
                 }
 
-                const correct = word.toLowerCase().trim();
-                const user = input.toLowerCase().trim();
-                const status = user === correct ? 'correct' : 'wrong';
+                var correct = word.toLowerCase().trim();
+                var user = input.toLowerCase().trim();
+                var status = user === correct ? 'correct' : 'wrong';
                 results.push({ word: word, userAnswer: input, status: status });
                 isAnswered = true;
                 answerInput.disabled = true;
@@ -903,7 +906,7 @@
                 if (status === 'correct') enterHint.textContent = '✅ 正确！';
                 else enterHint.textContent = '❌ 正确: ' + correct;
 
-                setTimeout(() => {
+                setTimeout(function() {
                     currentIndex++;
                     renderQuestion();
                 }, 700);
@@ -911,15 +914,15 @@
 
             function handleSkip() {
                 if (isAnswered) return;
-                const wordObj = quizWords[currentIndex];
-                const word = wordObj.word || wordObj;
+                var wordObj = quizWords[currentIndex];
+                var word = wordObj.word || wordObj;
                 results.push({ word: word, userAnswer: '(跳过)', status: 'skipped' });
                 isAnswered = true;
                 answerInput.disabled = true;
                 confirmBtn.disabled = true;
                 clearTimer();
                 enterHint.textContent = '⏭ 已跳过';
-                setTimeout(() => {
+                setTimeout(function() {
                     currentIndex++;
                     renderQuestion();
                 }, 400);
@@ -929,15 +932,15 @@
                 if (isAnswered) return;
                 replayCount++;
                 if (replayCount >= 4) {
-                    const wordObj = quizWords[currentIndex];
-                    const word = wordObj.word || wordObj;
+                    var wordObj = quizWords[currentIndex];
+                    var word = wordObj.word || wordObj;
                     results.push({ word: word, userAnswer: '(连续重播超限)', status: 'skipped' });
                     isAnswered = true;
                     answerInput.disabled = true;
                     confirmBtn.disabled = true;
                     clearTimer();
                     enterHint.textContent = '🔇 重播超限，自动跳过';
-                    setTimeout(() => {
+                    setTimeout(function() {
                         currentIndex++;
                         renderQuestion();
                     }, 500);
@@ -953,9 +956,9 @@
 
                 quizCard.style.display = 'none';
                 resultCard.style.display = 'block';
-                requestAnimationFrame(() => resultCard.classList.add('visible'));
+                requestAnimationFrame(function() { resultCard.classList.add('visible'); });
 
-                let correct = 0,
+                var correct = 0,
                     wrong = 0,
                     skipped = 0;
                 results.forEach(function(r) {
@@ -963,8 +966,8 @@
                     else if (r.status === 'wrong') wrong++;
                     else skipped++;
                 });
-                const total = results.length;
-                const rate = total > 0 ? (correct / total * 100) : 0;
+                var total = results.length;
+                var rate = total > 0 ? (correct / total * 100) : 0;
 
                 var titleText = '',
                     titleClass = '';
@@ -1035,7 +1038,7 @@
 
             // 再来一次
             function retryQuiz() {
-                var shuffled2 = [...rawWords];
+                var shuffled2 = rawWords.slice();
                 for (var i = shuffled2.length - 1; i > 0; i--) {
                     var j = Math.floor(Math.random() * (i + 1));
                     var temp = shuffled2[i];
@@ -1095,7 +1098,7 @@
             console.log('📋 共 ' + quizWords.length + ' 个词汇');
             console.log('🔊 发音: ' + (accent === 'us' ? '美音' : '英音'));
 
-        }); // 结束 DOMContentLoaded
+        }); // 结束 window.addEventListener('load')
     </script>
 
 </body>
