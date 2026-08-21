@@ -558,9 +558,26 @@
         </div>
     </div>
 
+    <!-- ===== 加载词汇数据 ===== -->
     <script src="vocabulary.js"></script>
+
+    <!-- ===== 验证数据是否加载成功 ===== -->
     <script>
-        // ===== 获取 URL 参数 =====
+        console.log('📊 ===== 词汇数据验证 =====');
+        if (typeof VOCABULARY_DATA !== 'undefined') {
+            const count = Object.keys(VOCABULARY_DATA).length;
+            console.log('✅ VOCABULARY_DATA 已加载，共 ' + count + ' 个单元');
+            console.log('📋 单元列表:', Object.keys(VOCABULARY_DATA).join(', '));
+        } else {
+            console.error('❌ VOCABULARY_DATA 未定义！请检查 vocabulary.js 是否加载');
+        }
+    </script>
+
+    <!-- ===== 主逻辑 ===== -->
+    <script>
+        // ============================================================
+        // 获取 URL 参数
+        // ============================================================
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             const unitsParam = params.get('units') || '';
@@ -568,10 +585,7 @@
             return { units: unitsParam.split(',').filter(Boolean), accent: accentParam };
         }
 
-        const {
-            units,
-            accent
-        } = getUrlParams();
+        const { units, accent } = getUrlParams();
 
         // 如果没有传递任何单元，显示提示
         if (units.length === 0) {
@@ -585,6 +599,18 @@
             throw new Error('No units selected');
         }
 
+        // 检查 VOCABULARY_DATA 是否存在
+        if (typeof VOCABULARY_DATA === 'undefined') {
+            document.querySelector('.quiz-card').innerHTML = `
+                <div class="loading-text">
+                    <p style="font-size:20px; margin-bottom:12px;">⚠️ 词汇数据加载失败</p>
+                    <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 文件存在于同一目录下</p>
+                    <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
+                </div>
+            `;
+            throw new Error('VOCABULARY_DATA not defined');
+        }
+
         // 加载词汇数据
         function loadWordsFromUnits(unitIds) {
             let allWords = [];
@@ -592,6 +618,8 @@
                 const unit = window.VOCABULARY_DATA && window.VOCABULARY_DATA[id];
                 if (unit && unit.words) {
                     allWords = allWords.concat(unit.words);
+                } else {
+                    console.warn('⚠️ 未找到单元数据:', id);
                 }
             });
             return allWords;
@@ -599,15 +627,18 @@
 
         const rawWords = loadWordsFromUnits(units);
 
+        console.log('📊 选中的单元:', units.join(', '));
+        console.log('📊 加载到的词汇总数:', rawWords.length);
+
         if (rawWords.length === 0) {
             document.querySelector('.quiz-card').innerHTML = `
                 <div class="loading-text">
                     <p style="font-size:20px; margin-bottom:12px;">⚠️ 所选单元暂无词汇数据</p>
-                    <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 已加载</p>
+                    <p style="font-size:14px; color:var(--color-text-placeholder);">请确认 vocabulary.js 中包含了这些单元的数据</p>
                     <button class="btn-home" style="margin-top:20px; padding:10px 32px;" onclick="location.href='index.html'">🏠 回到首页</button>
                 </div>
             `;
-            throw new Error('No vocabulary data');
+            throw new Error('No vocabulary data for selected units');
         }
 
         // 打乱并取25个
@@ -618,7 +649,11 @@
         }
         const quizWords = shuffled.slice(0, 25);
 
-        // ===== 状态 =====
+        console.log('📊 本次默写词汇数:', quizWords.length);
+
+        // ============================================================
+        // 状态
+        // ============================================================
         let currentIndex = 0;
         let results = [];
         let timer = null;
