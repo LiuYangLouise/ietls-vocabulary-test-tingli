@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Reborner · 雅思听力核心词汇 · Part 2 全量版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { min-height: 100vh; background: linear-gradient(165deg, #f0f7e9 0%, #deecd2 100%); padding: 1.5rem 1rem 2rem 1rem; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 620px; width: 100%; }
+        .header { margin-bottom: 1.5rem; text-align: center; }
+        .header h1 { font-size: 2.1rem; font-weight: 380; color: #2d543b; line-height: 1.3; letter-spacing: -0.2px; margin-bottom: 0.2rem; }
+        .header .sub1 { font-size: 1.5rem; color: #4f7b5a; font-weight: 340; line-height: 1.4; }
+        .header .sub2 { font-size: 1.2rem; color: #618967; font-weight: 300; line-height: 1.4; }
+        .header .sub3 { font-size: 0.9rem; color: #7a9f7e; font-weight: 300; margin-top: 0.2rem; }
+
+        .chapter-scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0.2rem 0 0.4rem 0; scrollbar-width: none; }
+        .chapter-scroll::-webkit-scrollbar { display: none; }
+        .chap-flex { display: inline-flex; gap: 0.7rem; padding: 0 0.2rem; }
+        .chap-btn { background: #f3fcee; border: 1px solid #d2e2c7; border-radius: 40px; padding: 0.6rem 1.8rem; font-size: 1.2rem; font-weight: 430; color: #2b5538; white-space: nowrap; box-shadow: 0 2px 6px rgba(150, 180, 140, 0.08); transition: 0.1s; cursor: pointer; }
+        .chap-btn.active { background: #cde5c2; border-color: #8bb282; color: #1b4125; font-weight: 500; }
+
+        .subchapter-scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0 0 0.4rem 0; scrollbar-width: none; }
+        .subchapter-scroll::-webkit-scrollbar { display: none; }
+        .sub-flex { display: inline-flex; gap: 0.6rem; padding: 0 0.2rem; }
+        .sub-btn { background: #ecf7e4; border: 1px solid #cde0c0; border-radius: 30px; padding: 0.4rem 1.3rem; font-size: 0.96rem; font-weight: 400; color: #336941; white-space: nowrap; box-shadow: 0 1px 4px rgba(120,150,100,0.1); cursor: pointer; }
+        .sub-btn.active-sub { background: #d4ebc5; border-color: #9abb90; color: #1e4529; font-weight: 460; }
+
+        .unit-scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0 0 0.8rem 0; scrollbar-width: none; }
+        .unit-scroll::-webkit-scrollbar { display: none; }
+        .unit-flex { display: inline-flex; gap: 0.5rem; padding: 0 0.2rem; }
+        .unit-btn { background: #f5fcf0; border: 1px solid #dae8cf; border-radius: 20px; padding: 0.3rem 1.1rem; font-size: 0.85rem; font-weight: 380; color: #3d734a; white-space: nowrap; box-shadow: 0 1px 3px rgba(120,150,100,0.06); cursor: pointer; }
+        .unit-btn.active-unit { background: #d0e8c2; border-color: #9ec092; color: #1a4024; font-weight: 460; }
+        .word-count-badge { font-size: 0.7rem; background: #c3ddb6; border-radius: 20px; padding: 0.1rem 0.5rem; margin-left: 0.4rem; color: #23522e; }
+
+        .flip-container { perspective: 1000px; width: 100%; margin: 0.8rem 0 1.2rem 0; }
+        .flipper { position: relative; width: 100%; height: auto; transition: transform 0.4s ease; transform-style: preserve-3d; }
+        .flipper.flipped { transform: rotateY(180deg); }
+        .front, .back { backface-visibility: hidden; -webkit-backface-visibility: hidden; position: relative; top: 0; left: 0; width: 100%; border-radius: 42px; padding: 2.8rem 1.2rem; background: #fcfff8; border: 1px solid #e3f0da; box-shadow: 0 10px 20px rgba(130, 160, 120, 0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; }
+        .back { position: absolute; transform: rotateY(180deg); min-height: 220px; }
+        .en-word { font-size: 2.8rem; font-weight: 370; color: #1c4a2a; line-height: 1.3; word-break: break-word; text-align: center; width: 100%; }
+        .ch-word { font-size: 2rem; font-weight: 340; color: #316a42; margin-top: 0.5rem; text-align: center; width: 100%; }
+        .pos { font-size: 1.2rem; color: #719b79; font-weight: 380; text-align: center; width: 100%; }
+
+        .nav-row { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin: 1.2rem 0 1.8rem 0; flex-wrap: wrap; }
+        .nav-btn { background: #f1fde9; border: 1px solid #cde0c3; border-radius: 60px; padding: 0.6rem 1.5rem; font-size: 1.1rem; color: #295e36; box-shadow: 0 2px 6px rgba(0,0,0,0.02); cursor: pointer; }
+        .quiz-btn { background: #e2f1d8; border-color: #aacaa0; font-weight: 440; }
+
+        .thumb-header { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 0.8rem; flex-wrap: wrap; gap: 0.5rem; }
+        .thumb-header span { font-size: 1.1rem; color: #3d6d4b; font-weight: 330; }
+        .thumb-header .actions { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+        .thumb-header .actions button { background: #dbeace; border: 1px solid #adc9a2; border-radius: 40px; padding: 0.3rem 1.1rem; font-size: 0.9rem; color: #23562f; cursor: pointer; white-space: nowrap; }
+        .thumb-header .actions button.select-all-btn { background: #c8e0b9; border-color: #9abb90; }
+
+        .thumb-grid-container { max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 20px; padding: 0.2rem 0.2rem 0.5rem 0.2rem; scrollbar-width: thin; scrollbar-color: #b5d3ae #e8f3e0; }
+        .thumb-grid-container::-webkit-scrollbar { width: 5px; }
+        .thumb-grid-container::-webkit-scrollbar-track { background: #e8f3e0; border-radius: 10px; }
+        .thumb-grid-container::-webkit-scrollbar-thumb { background: #b5d3ae; border-radius: 10px; }
+        .thumb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; padding: 0.2rem; }
+        .thumb-item { background: #f9fff3; border: 1px solid #dbefd0; border-radius: 24px; padding: 0.6rem 0.2rem 0.6rem 0.5rem; display: flex; align-items: center; gap: 0.2rem; box-shadow: 0 2px 6px rgba(160, 180, 140, 0.1); min-width: 0; }
+        .thumb-item input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: #86b07c; border-radius: 4px; flex-shrink: 0; }
+        .thumb-item label { font-size: 0.85rem; color: #2e623d; font-weight: 420; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; cursor: pointer; }
+        .tip { color: #799e7a; font-size: 0.9rem; margin-top: 0.8rem; text-align: center; }
+
+        .quiz-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(200, 225, 190, 0.8); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.2s; padding: 1rem; }
+        .quiz-overlay.show { visibility: visible; opacity: 1; }
+        .quiz-panel { background: #f6ffee; width: 100%; max-width: 450px; border-radius: 48px; padding: 2rem 1.5rem; border: 1px solid #daefce; box-shadow: 0 20px 30px rgba(90, 120, 70, 0.2); }
+        .quiz-panel h3 { font-size: 1.8rem; font-weight: 320; color: #2f6040; text-align: center; margin-bottom: 0.3rem; }
+        .close-area { display: flex; justify-content: flex-end; }
+        .close-quiz { font-size: 2.6rem; line-height: 0.8; color: #6d9b71; background: none; border: none; padding: 0 0.5rem; cursor: pointer; }
+        .quiz-card { background: white; border-radius: 42px; padding: 2rem 1rem; margin: 1.2rem 0; border: 1px solid #d1e6c5; text-align: center; }
+        .quiz-card .big-en { font-size: 2.8rem; color: #1e4d2b; font-weight: 340; word-break: break-word; }
+        .quiz-footer { display: flex; justify-content: center; gap: 2rem; margin: 1rem 0; }
+        .quiz-footer .nav-btn { font-size: 1.3rem; padding: 0.4rem 1.8rem; }
+        .quiz-counter { text-align: center; color: #517d58; font-size: 1rem; }
+
+        @media (max-width: 480px) {
+            .thumb-grid { grid-template-columns: repeat(3, 1fr); }
+            .en-word { font-size: 2.2rem; }
+            .ch-word { font-size: 1.6rem; }
+            .front, .back { padding: 1.8rem 1rem; min-height: 180px; }
+            .header h1 { font-size: 1.6rem; }
+            .chap-btn { font-size: 1rem; padding: 0.4rem 1.2rem; }
+            .sub-btn { font-size: 0.85rem; padding: 0.3rem 1rem; }
+            .unit-btn { font-size: 0.75rem; padding: 0.2rem 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Reborner 雅思听力核心词汇</h1>
+        <div class="sub1">Part 2 专项 · 全量版</div>
+        <div class="sub2">天天进步，每日新生</div>
+        <div class="sub3">📂 3 大主题 · 7 个单元 · 共 <span id="totalWordCount">0</span> 个词汇</div>
+    </div>
+
+    <!-- 第一级：Part 2 -->
+    <div class="chapter-scroll" id="mainCategoryScroll"><div class="chap-flex" id="mainCategoryFlex"></div></div>
+
+    <!-- 第二级：3 大主题 -->
+    <div class="subchapter-scroll" id="subCategoryScroll"><div class="sub-flex" id="subCategoryFlex"></div></div>
+
+    <!-- 第三级：7 个小单元 -->
+    <div class="unit-scroll" id="unitScroll"><div class="unit-flex" id="unitFlex"></div></div>
+
+    <!-- 主卡片 -->
+    <div class="flip-container" id="flipContainer">
+        <div class="flipper" id="flipper">
+            <div class="front" id="cardFront"><div class="en-word" id="mainEn">work</div></div>
+            <div class="back" id="cardBack">
+                <div class="en-word" id="backEn">work</div>
+                <div class="pos" id="posInfo">n.</div>
+                <div class="ch-word" id="mainCh">工作</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-row">
+        <button class="nav-btn" id="prevBtn">← 前</button>
+        <button class="nav-btn" id="nextBtn">后 →</button>
+        <button class="nav-btn" id="speakBtn">🔊 发音</button>
+        <button class="nav-btn quiz-btn" id="quizOpenBtn">🎯 quiz</button>
+    </div>
+
+    <div class="thumb-header">
+        <span>📌 当前单元词汇 · 勾选难词</span>
+        <div class="actions">
+            <button class="select-all-btn" id="selectAllBtn">✅ 全选</button>
+            <button class="select-all-btn" id="deselectAllBtn">⬜ 取消</button>
+            <button class="export-btn" id="exportDifficultBtn">📎 导出难词</button>
+        </div>
+    </div>
+    <div class="thumb-grid-container"><div class="thumb-grid" id="thumbGrid"></div></div>
+    <div class="tip">✓ 点击卡片翻转 · 勾选方格标记难词 · 三级分类层层筛选</div>
+</div>
+
+<!-- quiz 弹窗 -->
+<div class="quiz-overlay" id="quizOverlay">
+    <div class="quiz-panel">
+        <div class="close-area"><button class="close-quiz" id="closeQuizBtn">⨯</button></div>
+        <h3>🔍 随机小测</h3>
+        <div class="quiz-card"><div class="big-en" id="quizWord">work</div></div>
+        <div class="quiz-footer">
+            <button class="nav-btn" id="quizPrevBtn">←</button>
+            <button class="nav-btn" id="quizNextBtn">→</button>
+        </div>
+        <div class="quiz-counter" id="quizCounter">1 / 5</div>
+    </div>
+</div>
+
+<script>
+// ================================================================
+// Part 2 完整词汇数据：3 大主题 → 7 个小单元
+// 全部来自 vocabulary.js，已补全所有缺失词汇
+// ================================================================
+const VOCAB_STRUCTURE = {
+    // ========== 主题 1: 就业与工作 ==========
+    '就业与工作': {
+        units: {
+            // ----- 单元 1: 岗位求职面试人员 (2-1-1) -----
+            '岗位求职面试人员': [
+                { en: 'work', pos: 'n.', ch: '工作' },
+                { en: 'working', pos: 'n.', ch: '工作' },
+                { en: 'workforce', pos: 'n.', ch: '劳动力' },
+                { en: 'workplace', pos: 'n.', ch: '工作场所' },
+                { en: 'workshop', pos: 'n.', ch: '工作室' },
+                { en: 'workload', pos: 'n.', ch: '工作量' },
+                { en: 'worksheet', pos: 'n.', ch: '工作表' },
+                { en: 'practical work', pos: 'phr.', ch: '实践工作' },
+                { en: 'worker', pos: 'n.', ch: '工人' },
+                { en: 'former worker', pos: 'phr.', ch: '离职员工；前任员工' },
+                { en: 'labor', pos: 'n.', ch: '劳动力' },
+                { en: 'staff', pos: 'n.', ch: '员工' },
+                { en: 'comer', pos: 'n.', ch: '来者' },
+                { en: 'employee', pos: 'n.', ch: '雇员' },
+                { en: 'employer', pos: 'n.', ch: '雇主' },
+                { en: 'unemployed', pos: 'adj.', ch: '失业的' },
+                { en: 'job', pos: 'n.', ch: '工作' },
+                { en: 'full time', pos: 'phr.', ch: '全职' },
+                { en: 'part time', pos: 'phr.', ch: '兼职' },
+                { en: 'interview', pos: 'n.', ch: '面试' },
+                { en: 'interview question', pos: 'phr.', ch: '面试问题' },
+                { en: 'phone interview', pos: 'phr.', ch: '电话面试' },
+                { en: 'job interview', pos: 'phr.', ch: '求职面试' },
+                { en: 'interview skills', pos: 'phr.', ch: '面试技巧' },
+                { en: 'job application', pos: 'phr.', ch: '求职申请' },
+                { en: 'issue', pos: 'v.', ch: '发布' },
+                { en: 'invitation', pos: 'n.', ch: '邀请' },
+                { en: 'placement', pos: 'n.', ch: '安排' },
+                { en: 'placement test', pos: 'phr.', ch: '定职测验' },
+                { en: 'hire', pos: 'v.', ch: '雇佣；租用' },
+                { en: 'recruit', pos: 'v./n.', ch: '招募；新成员' },
+                { en: 'retired', pos: 'adj.', ch: '退休的' },
+                { en: 'dismiss', pos: 'v.', ch: '解散' },
+                { en: 'resign', pos: 'v.', ch: '辞职' },
+                { en: 'redundant', pos: 'adj.', ch: '被裁员的' },
+                { en: 'candidate', pos: 'n.', ch: '候选人，求职者' },
+                { en: 'applicant', pos: 'n.', ch: '申请者' },
+                { en: 'volunteer', pos: 'n.', ch: '志愿者' },
+                { en: 'trainee', pos: 'n.', ch: '实习生，受训者' },
+                { en: 'apprentice', pos: 'n.', ch: '学徒' },
+                { en: 'office', pos: 'n.', ch: '办公室' },
+                { en: 'career office', pos: 'phr.', ch: '(大学)就业指导办公室' },
+                { en: 'large office', pos: 'phr.', ch: '大办公室' },
+                { en: 'career', pos: 'n.', ch: '职业生涯' },
+                { en: 'future career', pos: 'phr.', ch: '前程' },
+                { en: 'future', pos: 'n.', ch: '未来' },
+                { en: 'training', pos: 'n.', ch: '培训' },
+                { en: 'retrain', pos: 'n.', ch: '再培训' }
+            ],
+            // ----- 单元 2: 薪资福利办公培训 (2-1-2) -----
+            '薪资福利办公培训': [
+                { en: 'reward', pos: 'n.', ch: '报酬；奖励' },
+                { en: 'earn', pos: 'v.', ch: '收入' },
+                { en: 'salary', pos: 'n.', ch: '工资' },
+                { en: 'wages', pos: 'n.', ch: '工资' },
+                { en: 'income', pos: 'n.', ch: '收入' },
+                { en: 'low income', pos: 'phr.', ch: '低收入' },
+                { en: 'bonus', pos: 'n.', ch: '奖金' },
+                { en: 'welfare', pos: 'n.', ch: '福利' },
+                { en: 'allowance', pos: 'n.', ch: '补贴' },
+                { en: 'compensation', pos: 'n.', ch: '补偿' },
+                { en: 'sick pay', pos: 'phr.', ch: '病假津贴' },
+                { en: 'overtime', pos: 'n.', ch: '加班' },
+                { en: 'office equipment', pos: 'phr.', ch: '办公设备' },
+                { en: 'file', pos: 'n.', ch: '档案' },
+                { en: 'document', pos: 'n.', ch: '文件' },
+                { en: 'memo', pos: 'n.', ch: '备忘录' },
+                { en: 'schedule', pos: 'n.', ch: '工作日程' },
+                { en: 'deadline', pos: 'n.', ch: '截止期限' },
+                { en: 'meeting', pos: 'n.', ch: '会议' },
+                { en: 'group organizer', pos: 'phr.', ch: '小组组织者' },
+                { en: 'further training', pos: 'phr.', ch: '进阶培训' },
+                { en: 'course', pos: 'n.', ch: '培训课程' },
+                { en: 'promotion', pos: 'n.', ch: '晋升' },
+                { en: 'prospect', pos: 'n.', ch: '职业前景' },
+                { en: 'ambition', pos: 'n.', ch: '抱负' },
+                { en: 'motivation', pos: 'n.', ch: '工作动力' },
+                { en: 'pressure', pos: 'n.', ch: '工作压力' },
+                { en: 'stress', pos: 'n.', ch: '压力' },
+                { en: 'efficiency', pos: 'n.', ch: '效率' },
+                { en: 'productive', pos: 'adj.', ch: '产出高的' },
+                { en: 'inefficient', pos: 'adj.', ch: '效率低下的' },
+                { en: 'evaluate', pos: 'v.', ch: '评估' },
+                { en: 'assessment', pos: 'n.', ch: '考评' },
+                { en: 'feedback', pos: 'n.', ch: '反馈' },
+                { en: 'reference', pos: 'n.', ch: '推荐信' }
+            ]
+        }
+    },
+
+    // ========== 主题 2: 公共设施与服务 ==========
+    '公共设施与服务': {
+        units: {
+            // ----- 单元 3: 城市地理与区域 (拆分自 2-2-1) -----
+            '城市地理与区域': [
+                { en: 'city', pos: 'n.', ch: '城市' },
+                { en: 'city centre', pos: 'phr.', ch: '市中心' },
+                { en: 'urban', pos: 'n.', ch: '城市' },
+                { en: 'urban area', pos: 'phr.', ch: '城区' },
+                { en: 'regional', pos: 'adj.', ch: '区域性的' },
+                { en: 'area', pos: 'n.', ch: '地区；区域' },
+                { en: 'smaller area', pos: 'phr.', ch: '更小的地方' },
+                { en: 'district', pos: 'n.', ch: '地区' },
+                { en: 'territory', pos: 'n.', ch: '领土' },
+                { en: 'population', pos: 'n.', ch: '人口' },
+                { en: 'resident', pos: 'n.', ch: '居民' },
+                { en: 'citizen', pos: 'n.', ch: '市民' },
+                { en: 'crowded', pos: 'adj.', ch: '拥挤的' },
+                { en: 'large', pos: 'adj.', ch: '大的' },
+                { en: 'large scale', pos: 'phr.', ch: '大规模的' },
+                { en: 'centre', pos: 'n.', ch: '中心' },
+                { en: 'central', pos: 'adj.', ch: '中心的' },
+                { en: 'central location', pos: 'phr.', ch: '核心区' },
+                { en: 'town', pos: 'n.', ch: '镇' },
+                { en: 'town hall', pos: 'phr.', ch: '市政厅' },
+                { en: 'landmark', pos: 'n.', ch: '地标' },
+                { en: 'public', pos: 'adj.', ch: '公众的；公开的' },
+                { en: 'public square', pos: 'phr.', ch: '公共广场' },
+                { en: 'common', pos: 'adj.', ch: '常见的' },
+                { en: 'common room', pos: 'phr.', ch: '公共休息室' },
+                { en: 'native', pos: 'adj.', ch: '本地的' },
+                { en: 'nonnative', pos: 'adj.', ch: '引进的' },
+                { en: 'none', pos: 'adj.', ch: '没有' },
+                { en: 'local', pos: 'adj.', ch: '当地的' },
+                { en: 'local community', pos: 'phr.', ch: '地方社区' },
+                { en: 'location', pos: 'n.', ch: '位置' },
+                { en: 'position', pos: 'n.', ch: '位置' }
+            ],
+            // ----- 单元 4: 建筑设施与场所 (拆分自 2-2-1) -----
+            '建筑设施与场所': [
+                { en: 'facility', pos: 'n.', ch: '公共设施' },
+                { en: 'infrastructure', pos: 'n.', ch: '基础设施' },
+                { en: 'community', pos: 'n.', ch: '社区' },
+                { en: 'neighborhood', pos: 'n.', ch: '街区' },
+                { en: 'public area', pos: 'phr.', ch: '公共区域' },
+                { en: 'park', pos: 'n.', ch: '公园' },
+                { en: 'garden', pos: 'n.', ch: '花园' },
+                { en: 'builder', pos: 'n.', ch: '建造师；创建者' },
+                { en: 'building', pos: 'n.', ch: '建筑物' },
+                { en: 'planner', pos: 'n.', ch: '规划师' },
+                { en: 'construction', pos: 'n.', ch: '建造；构造' },
+                { en: 'castle', pos: 'n.', ch: '城堡' },
+                { en: 'churches', pos: 'n.', ch: '教堂' },
+                { en: 'palace', pos: 'n.', ch: '宫殿' },
+                { en: 'tower', pos: 'n.', ch: '塔；塔楼' },
+                { en: 'hall', pos: 'n.', ch: '大厅' },
+                { en: 'block', pos: 'n.', ch: '街区' },
+                { en: 'square', pos: 'n.', ch: '广场' },
+                { en: 'utility', pos: 'n.', ch: '公共事业' },
+                { en: 'road', pos: 'n.', ch: '道路' },
+                { en: 'road map', pos: 'phr.', ch: '路线图' },
+                { en: 'smooth road', pos: 'phr.', ch: '平稳的道路' },
+                { en: 'smooth', pos: 'adj.', ch: '平坦的' },
+                { en: 'street', pos: 'n.', ch: '街道' },
+                { en: 'bridges', pos: 'n.', ch: '桥' },
+                { en: 'tunnel', pos: 'n.', ch: '隧道' },
+                { en: 'dam', pos: 'n.', ch: '水坝' },
+                { en: 'harbour', pos: 'n.', ch: '港口' },
+                { en: 'port', pos: 'n.', ch: '港口' },
+                { en: 'garden tool', pos: 'phr.', ch: '园林工具' },
+                { en: 'gardening', pos: 'n.', ch: '园艺' }
+            ],
+            // ----- 单元 5: 治安法律与公共制度 (2-2-2) -----
+            '治安法律与公共制度': [
+                { en: 'sign', pos: 'n.', ch: '标识，指示牌' },
+                { en: 'traffic sign', pos: 'phr.', ch: '交通标志' },
+                { en: 'advertisement', pos: 'n.', ch: '广告' },
+                { en: 'public service', pos: 'phr.', ch: '公共服务' },
+                { en: 'security', pos: 'n.', ch: '安保，安全' },
+                { en: 'safety', pos: 'n.', ch: '安全' },
+                { en: 'police', pos: 'n.', ch: '警察' },
+                { en: 'police station', pos: 'phr.', ch: '警察局' },
+                { en: 'fire station', pos: 'phr.', ch: '消防站' },
+                { en: 'post office', pos: 'phr.', ch: '邮局' },
+                { en: 'bank', pos: 'n.', ch: '银行' },
+                { en: 'hospital', pos: 'n.', ch: '医院' },
+                { en: 'school', pos: 'n.', ch: '学校' },
+                { en: 'law', pos: 'n.', ch: '法律' },
+                { en: 'legal', pos: 'adj.', ch: '合法的' },
+                { en: 'illegal', pos: 'adj.', ch: '非法的' },
+                { en: 'crime', pos: 'n.', ch: '犯罪' },
+                { en: 'criminal', pos: 'n.', ch: '罪犯' },
+                { en: 'fine', pos: 'n.', ch: '罚金' },
+                { en: 'punish', pos: 'v.', ch: '惩罚' },
+                { en: 'regulation', pos: 'n.', ch: '规章制度' },
+                { en: 'rule', pos: 'n.', ch: '规则' },
+                { en: 'policy', pos: 'n.', ch: '政策' },
+                { en: 'guideline', pos: 'n.', ch: '指导方针' },
+                { en: 'restriction', pos: 'n.', ch: '限制规定' },
+                { en: 'prohibit', pos: 'v.', ch: '禁止' },
+                { en: 'permit', pos: 'n.', ch: '许可证' },
+                { en: 'license', pos: 'n.', ch: '执照' },
+                { en: 'application', pos: 'n.', ch: '申请' }
+            ]
+        }
+    },
+
+    // ========== 主题 3: 文体活动 ==========
+    '文体活动': {
+        units: {
+            // ----- 单元 6: 艺术音乐媒体文学 (2-3-1) -----
+            '艺术音乐媒体文学': [
+                { en: 'art', pos: 'n.', ch: '艺术' },
+                { en: 'painting', pos: 'n.', ch: '绘画' },
+                { en: 'drawing', pos: 'n.', ch: '素描' },
+                { en: 'sculpture', pos: 'n.', ch: '雕塑' },
+                { en: 'exhibition', pos: 'n.', ch: '展览' },
+                { en: 'display', pos: 'n.', ch: '展品，陈列' },
+                { en: 'craft', pos: 'n.', ch: '手工艺' },
+                { en: 'music', pos: 'n.', ch: '音乐' },
+                { en: 'musical', pos: 'adj.', ch: '音乐的' },
+                { en: 'instrument', pos: 'n.', ch: '乐器' },
+                { en: 'concert', pos: 'n.', ch: '音乐会' },
+                { en: 'band', pos: 'n.', ch: '乐队' },
+                { en: 'song', pos: 'n.', ch: '歌曲' },
+                { en: 'melody', pos: 'n.', ch: '旋律' },
+                { en: 'rhythm', pos: 'n.', ch: '节奏' },
+                { en: 'performance', pos: 'n.', ch: '表演' },
+                { en: 'show', pos: 'n.', ch: '演出' },
+                { en: 'movie', pos: 'n.', ch: '电影' },
+                { en: 'film', pos: 'n.', ch: '影片' },
+                { en: 'video', pos: 'n.', ch: '视频' },
+                { en: 'documentary', pos: 'n.', ch: '纪录片' },
+                { en: 'media', pos: 'n.', ch: '媒体' },
+                { en: 'journalism', pos: 'n.', ch: '新闻业' },
+                { en: 'press', pos: 'n.', ch: '新闻报刊' },
+                { en: 'literature', pos: 'n.', ch: '文学' },
+                { en: 'book', pos: 'n.', ch: '书籍' },
+                { en: 'novel', pos: 'n.', ch: '小说' },
+                { en: 'poem', pos: 'n.', ch: '诗歌' },
+                { en: 'magazine', pos: 'n.', ch: '杂志' },
+                { en: 'newspaper', pos: 'n.', ch: '报纸' },
+                { en: 'article', pos: 'n.', ch: '文章' }
+            ],
+            // ----- 单元 7: 体育休闲节日活动 (2-3-2) -----
+            '体育休闲节日活动': [
+                { en: 'sport', pos: 'n.', ch: '体育运动' },
+                { en: 'exercise', pos: 'n.', ch: '锻炼' },
+                { en: 'running', pos: 'n.', ch: '跑步' },
+                { en: 'swimming', pos: 'n.', ch: '游泳' },
+                { en: 'cycling', pos: 'n.', ch: '骑行' },
+                { en: 'hiking', pos: 'n.', ch: '徒步' },
+                { en: 'climbing', pos: 'n.', ch: '攀岩' },
+                { en: 'match', pos: 'n.', ch: '比赛' },
+                { en: 'competition', pos: 'n.', ch: '竞赛' },
+                { en: 'race', pos: 'n.', ch: '赛跑，竞赛' },
+                { en: 'champion', pos: 'n.', ch: '冠军' },
+                { en: 'tournament', pos: 'n.', ch: '锦标赛' },
+                { en: 'amateur', pos: 'n.', ch: '业余爱好者' },
+                { en: 'professional', pos: 'n.', ch: '专业选手' },
+                { en: 'player', pos: 'n.', ch: '运动员，选手' },
+                { en: 'coach', pos: 'n.', ch: '教练' },
+                { en: 'leisure', pos: 'n.', ch: '休闲' },
+                { en: 'entertainment', pos: 'n.', ch: '娱乐' },
+                { en: 'recreation', pos: 'n.', ch: '消遣活动' },
+                { en: 'hobby', pos: 'n.', ch: '爱好' },
+                { en: 'pastime', pos: 'n.', ch: '消遣' },
+                { en: 'festival', pos: 'n.', ch: '节日活动' },
+                { en: 'celebration', pos: 'n.', ch: '庆典' },
+                { en: 'parade', pos: 'n.', ch: '游行' },
+                { en: 'carnival', pos: 'n.', ch: '狂欢节' },
+                { en: 'gathering', pos: 'n.', ch: '聚会' },
+                { en: 'picnic', pos: 'n.', ch: '野餐' },
+                { en: 'outing', pos: 'n.', ch: '短途出游' }
+            ]
+        }
+    }
+};
+
+// ================================================================
+// 构建扁平词汇列表
+// ================================================================
+const allVocab = [];
+const themeList = Object.keys(VOCAB_STRUCTURE);
+const unitMap = {};
+
+themeList.forEach(theme => {
+    const units = VOCAB_STRUCTURE[theme].units;
+    const unitNames = Object.keys(units);
+    unitMap[theme] = unitNames;
+    unitNames.forEach(unitName => {
+        const words = units[unitName] || [];
+        words.forEach(w => {
+            allVocab.push({
+                en: w.en,
+                ch: w.ch,
+                pos: w.pos,
+                theme: theme,
+                unit: unitName
+            });
+        });
+    });
+});
+
+document.getElementById('totalWordCount').textContent = allVocab.length;
+
+// ================================================================
+// 应用状态
+// ================================================================
+let currentTheme = themeList[0] || '就业与工作';
+let currentUnit = (unitMap[currentTheme] && unitMap[currentTheme][0]) || '岗位求职面试人员';
+let currentWords = allVocab.filter(w => w.theme === currentTheme && w.unit === currentUnit);
+let currentIndex = 0;
+let difficultSet = new Set();
+
+// DOM 元素
+const mainCategoryFlex = document.getElementById('mainCategoryFlex');
+const subCategoryFlex = document.getElementById('subCategoryFlex');
+const unitFlex = document.getElementById('unitFlex');
+const flipper = document.getElementById('flipper');
+const mainEn = document.getElementById('mainEn');
+const backEn = document.getElementById('backEn');
+const posInfo = document.getElementById('posInfo');
+const mainCh = document.getElementById('mainCh');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const speakBtn = document.getElementById('speakBtn');
+const thumbGrid = document.getElementById('thumbGrid');
+const exportBtn = document.getElementById('exportDifficultBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const deselectAllBtn = document.getElementById('deselectAllBtn');
+const quizOpen = document.getElementById('quizOpenBtn');
+const quizOverlay = document.getElementById('quizOverlay');
+const closeQuiz = document.getElementById('closeQuizBtn');
+const quizWord = document.getElementById('quizWord');
+const quizPrev = document.getElementById('quizPrevBtn');
+const quizNext = document.getElementById('quizNextBtn');
+const quizCounter = document.getElementById('quizCounter');
+
+flipper.addEventListener('click', () => flipper.classList.toggle('flipped'));
+
+function renderMainCats() {
+    mainCategoryFlex.innerHTML = '';
+    const btn = document.createElement('button');
+    btn.className = 'chap-btn active';
+    btn.innerText = 'Part 2';
+    mainCategoryFlex.appendChild(btn);
+}
+
+function renderThemes() {
+    subCategoryFlex.innerHTML = '';
+    themeList.forEach(theme => {
+        const btn = document.createElement('button');
+        btn.className = `sub-btn ${theme === currentTheme ? 'active-sub' : ''}`;
+        btn.innerText = theme;
+        btn.dataset.theme = theme;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active-sub'));
+            btn.classList.add('active-sub');
+            currentTheme = theme;
+            const units = unitMap[theme] || [];
+            currentUnit = units.length > 0 ? units[0] : '';
+            renderUnits();
+            updateWordListAndDisplay();
+        });
+        const cnt = allVocab.filter(w => w.theme === theme).length;
+        const span = document.createElement('span');
+        span.className = 'word-count-badge';
+        span.innerText = cnt;
+        btn.appendChild(span);
+        subCategoryFlex.appendChild(btn);
+    });
+}
+
+function renderUnits() {
+    unitFlex.innerHTML = '';
+    const units = unitMap[currentTheme] || [];
+    units.forEach(unitName => {
+        const btn = document.createElement('button');
+        btn.className = `unit-btn ${unitName === currentUnit ? 'active-unit' : ''}`;
+        btn.innerText = unitName;
+        btn.dataset.unit = unitName;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active-unit'));
+            btn.classList.add('active-unit');
+            currentUnit = unitName;
+            updateWordListAndDisplay();
+        });
+        const cnt = allVocab.filter(w => w.theme === currentTheme && w.unit === unitName).length;
+        const span = document.createElement('span');
+        span.className = 'word-count-badge';
+        span.innerText = cnt;
+        btn.appendChild(span);
+        unitFlex.appendChild(btn);
+    });
+}
+
+function updateWordListAndDisplay() {
+    currentWords = allVocab.filter(w => w.theme === currentTheme && w.unit === currentUnit);
+    currentIndex = currentWords.length > 0 ? 0 : -1;
+    refreshMainCard();
+    renderThumbnails();
+}
+
+function refreshMainCard() {
+    if (currentWords.length === 0 || currentIndex < 0) {
+        mainEn.innerText = '无';
+        backEn.innerText = '';
+        posInfo.innerText = '';
+        mainCh.innerText = '';
+        return;
+    }
+    const w = currentWords[currentIndex];
+    mainEn.innerText = w.en;
+    backEn.innerText = w.en;
+    posInfo.innerText = w.pos || '';
+    mainCh.innerText = w.ch;
+    flipper.classList.remove('flipped');
+    speakWord(w.en);
+}
+
+function speakWord(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function renderThumbnails() {
+    thumbGrid.innerHTML = '';
+    currentWords.forEach((w, idx) => {
+        const key = `${w.en}|${w.ch}`;
+        const card = document.createElement('div');
+        card.className = 'thumb-item';
+        card.innerHTML = `<input type="checkbox" class="diff-check" data-key="${key}" ${difficultSet.has(key) ? 'checked' : ''}><label>${w.en}</label>`;
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'INPUT') { currentIndex = idx; refreshMainCard(); }
+        });
+        const chk = card.querySelector('.diff-check');
+        chk.addEventListener('change', (e) => {
+            e.stopPropagation();
+            const k = e.target.dataset.key;
+            e.target.checked ? difficultSet.add(k) : difficultSet.delete(k);
+        });
+        thumbGrid.appendChild(card);
+    });
+}
+
+function setAllChecks(checked) {
+    const checks = thumbGrid.querySelectorAll('.diff-check');
+    checks.forEach(chk => {
+        chk.checked = checked;
+        const key = chk.dataset.key;
+        if (checked) difficultSet.add(key);
+        else difficultSet.delete(key);
+    });
+}
+
+selectAllBtn.addEventListener('click', () => setAllChecks(true));
+deselectAllBtn.addEventListener('click', () => setAllChecks(false));
+
+function exportDifficult() {
+    const selected = allVocab.filter(v => difficultSet.has(`${v.en}|${v.ch}`));
+    if (!selected.length) { alert('没有勾选难词'); return; }
+    let csv = "英文,词性,中文含义,主题,单元\n";
+    selected.forEach(w => csv += `"${w.en}","${w.pos || ''}","${w.ch}","${w.theme}","${w.unit}"\n`);
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "ielts_listening_difficult_words_part2.csv";
+    link.click();
+}
+
+exportBtn.addEventListener('click', exportDifficult);
+
+let quizList = [], quizIdx = 0;
+function openQuiz() {
+    if (!currentWords.length) return;
+    const shuffled = [...currentWords].sort(()=>Math.random()-0.5);
+    quizList = shuffled.slice(0, Math.min(20, currentWords.length));
+    quizIdx = 0; updateQuizDisplay(); quizOverlay.classList.add('show');
+}
+function updateQuizDisplay() { if(quizList.length){ quizWord.innerText = quizList[quizIdx].en; quizCounter.innerText = `${quizIdx+1}/${quizList.length}`; } }
+function closeQuizFn() { quizOverlay.classList.remove('show'); }
+
+quizOpen.addEventListener('click', openQuiz);
+closeQuiz.addEventListener('click', closeQuizFn);
+quizPrev.addEventListener('click', ()=>{ if(quizList.length){ quizIdx = (quizIdx-1+quizList.length)%quizList.length; updateQuizDisplay(); } });
+quizNext.addEventListener('click', ()=>{ if(quizList.length){ quizIdx = (quizIdx+1)%quizList.length; updateQuizDisplay(); } });
+quizOverlay.addEventListener('click', (e)=>{ if(e.target===quizOverlay) closeQuizFn(); });
+
+prevBtn.addEventListener('click', ()=>{
+    if(!currentWords.length) return;
+    currentIndex = (currentIndex-1+currentWords.length)%currentWords.length; refreshMainCard();
+});
+nextBtn.addEventListener('click', ()=>{
+    if(!currentWords.length) return;
+    currentIndex = (currentIndex+1)%currentWords.length; refreshMainCard();
+});
+speakBtn.addEventListener('click', ()=>{
+    if(currentWords[currentIndex]) speakWord(currentWords[currentIndex].en);
+});
+
+renderMainCats();
+renderThemes();
+renderUnits();
+updateWordListAndDisplay();
+</script>
+</body>
+</html>
