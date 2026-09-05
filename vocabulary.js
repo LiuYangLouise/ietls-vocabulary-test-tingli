@@ -2675,3 +2675,9 @@ const VOCABULARY_DATA = {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = VOCABULARY_DATA;
 }
+
+// ⭐ 在浏览器中挂载到 window（关键修复！）
+if (typeof window !== 'undefined') {
+    window.VOCABULARY_DATA = VOCABULARY_DATA;
+    console.log('✅ VOCABULARY_DATA 已加载，共 ' + Object.keys(VOCABULARY_DATA).length + ' 个单元');
+}
